@@ -8,7 +8,7 @@ hero:
     actions:
         - theme: brand
           text: Get Started
-          link: /guide/getting-started
+          link: /guide/what-is-agentier
         - theme: alt
           text: View on GitHub
           link: https://github.com/itIsMaku/agentier
