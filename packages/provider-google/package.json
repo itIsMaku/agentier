@@ -1,0 +1,29 @@
+{
+    "name": "@agentier/google",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "bun build ./src/index.ts --outdir ./dist --target node",
+        "test": "bun test",
+        "typecheck": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "@agentier/core": "^0.1.0"
+    },
+    "devDependencies": {
+        "@agentier/core": "workspace:*",
+        "typescript": "^5.5.0",
+        "@types/bun": "latest"
+    }
+}

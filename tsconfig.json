@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "declaration": true,
+        "sourceMap": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "types": ["node"],
+        "paths": {
+            "@agentier/core": ["./packages/core/src/index.ts"],
+            "@agentier/openai": ["./packages/provider-openai/src/index.ts"],
+            "@agentier/anthropic": ["./packages/provider-anthropic/src/index.ts"],
+            "@agentier/google": ["./packages/provider-google/src/index.ts"],
+            "@agentier/middleware": ["./packages/middleware/src/index.ts"],
+            "@agentier/memory": ["./packages/memory/src/index.ts"],
+            "@agentier/tools": ["./packages/tools/src/index.ts"]
+        }
+    },
+    "include": ["packages/*/src/**/*"]
+}

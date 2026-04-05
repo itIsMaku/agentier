@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "itIsMaku/agentier" }],
+  "commit": false,
+  "fixed": [
+    [
+      "@agentier/core",
+      "@agentier/openai",
+      "@agentier/anthropic",
+      "@agentier/google",
+      "@agentier/middleware",
+      "@agentier/memory",
+      "@agentier/tools"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "master",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
