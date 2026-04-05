@@ -10,8 +10,17 @@
             "types": "./dist/index.d.ts"
         }
     },
+    "description": "Built-in tools for agentier — readFile, writeFile, fetch, shell",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itIsMaku/agentier.git",
+        "directory": "packages/tools"
+    },
+    "homepage": "https://github.com/itIsMaku/agentier/tree/master/packages/tools",
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
         "build": "bun build ./src/index.ts --outdir ./dist --target node",

@@ -10,8 +10,17 @@
             "types": "./dist/index.d.ts"
         }
     },
+    "description": "Native Google Gemini provider for agentier",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itIsMaku/agentier.git",
+        "directory": "packages/provider-google"
+    },
+    "homepage": "https://github.com/itIsMaku/agentier/tree/master/packages/provider-google",
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
         "build": "bun build ./src/index.ts --outdir ./dist --target node",

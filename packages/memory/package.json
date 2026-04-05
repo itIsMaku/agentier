@@ -10,8 +10,17 @@
             "types": "./dist/index.d.ts"
         }
     },
+    "description": "Memory providers for agentier — BufferMemory, FileMemory",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itIsMaku/agentier.git",
+        "directory": "packages/memory"
+    },
+    "homepage": "https://github.com/itIsMaku/agentier/tree/master/packages/memory",
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
         "build": "bun build ./src/index.ts --outdir ./dist --target node",

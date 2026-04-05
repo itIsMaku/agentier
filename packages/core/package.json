@@ -10,8 +10,17 @@
             "types": "./dist/index.d.ts"
         }
     },
+    "description": "Core agent loop engine for agentier — createAgent(), defineTool(), types",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itIsMaku/agentier.git",
+        "directory": "packages/core"
+    },
+    "homepage": "https://github.com/itIsMaku/agentier/tree/master/packages/core",
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
         "build": "bun build ./src/index.ts --outdir ./dist --target node",

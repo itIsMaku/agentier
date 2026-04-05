@@ -10,8 +10,17 @@
             "types": "./dist/index.d.ts"
         }
     },
+    "description": "Built-in middleware for agentier — log, retry, rate-limit, cache",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itIsMaku/agentier.git",
+        "directory": "packages/middleware"
+    },
+    "homepage": "https://github.com/itIsMaku/agentier/tree/master/packages/middleware",
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
         "build": "bun build ./src/index.ts --outdir ./dist --target node",
