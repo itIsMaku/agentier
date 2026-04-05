@@ -29,6 +29,10 @@ bun.lockb
 .test-tools/
 coverage/
 
+# VitePress
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
 # Logs
 *.log
 npm-debug.log*

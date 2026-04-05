@@ -4,3 +4,5 @@ bun.lock
 .changeset/
 .internal/
 coverage/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
