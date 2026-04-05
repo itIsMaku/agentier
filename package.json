@@ -5,6 +5,7 @@
         "packages/*"
     ],
     "scripts": {
+        "build": "bun run scripts/build.ts",
         "test": "bun test --recursive packages/",
         "typecheck": "bunx tsc --noEmit",
         "lint": "eslint packages/",

@@ -1,0 +1,11 @@
+{
+    "extends": "../../tsconfig.build.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "paths": {
+            "@agentier/core": ["../core/dist/index.d.ts"]
+        }
+    },
+    "include": ["src/**/*"]
+}
