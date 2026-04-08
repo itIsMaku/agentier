@@ -103,6 +103,42 @@ execute: async () => {
 }
 ```
 
+### Image Results
+
+Tools can return images that vision-capable models can analyze. Return an `ImageResult` object from your tool's execute function:
+
+```ts
+import { defineTool } from '@agentier/core'
+import { z } from 'zod'
+
+const screenshotTool = defineTool({
+    name: 'screenshot',
+    description: 'Capture a screenshot of the application',
+    parameters: z.object({}),
+    execute: async () => {
+        const base64 = await captureScreenAsBase64()
+        return {
+            type: 'image',
+            mediaType: 'image/jpeg', // 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+            data: base64, // base64-encoded image data
+            text: 'Screenshot captured', // optional text alongside the image
+        }
+    },
+})
+```
+
+The agent loop automatically detects `ImageResult` objects and formats them as multimodal content blocks for each provider:
+
+- **OpenAI** — `image_url` content part with a `data:` URI
+- **Anthropic** — `image` source block with `base64` encoding inside `tool_result`
+- **Google Gemini** — `inlineData` part alongside the `functionResponse`
+
+The `text` field is optional. When provided, it appears as a text content block alongside the image. When omitted, the default text `"Image result"` is used.
+
+::: tip
+Image results work with any vision-capable model (GPT-4o, Claude Sonnet/Opus, Gemini). The model receives the actual image — not the base64 string — so it can analyze visual content, describe screenshots, detect UI elements, etc.
+:::
+
 ## Using Tools with an Agent
 
 Pass tools to `createAgent` in the `tools` array:

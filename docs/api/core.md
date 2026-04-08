@@ -173,8 +173,18 @@ interface Message {
     toolCalls?: ToolCall[]
     toolCallId?: string
     name?: string
+    image?: ImageResult
 }
 ```
+
+| Field        | Type             | Description                                                                 |
+| ------------ | ---------------- | --------------------------------------------------------------------------- |
+| `role`       | `Role`           | The role of the message author.                                             |
+| `content`    | `string \| null` | Text content, or `null` for tool-call-only assistant messages.              |
+| `toolCalls`  | `ToolCall[]?`    | Tool calls requested by the assistant.                                      |
+| `toolCallId` | `string?`        | ID of the tool call this message responds to (for `role: 'tool'`).          |
+| `name`       | `string?`        | Optional display name for the author.                                       |
+| `image`      | `ImageResult?`   | Image data attached to a tool result, formatted as multimodal by providers. |
 
 ---
 
@@ -396,6 +406,38 @@ interface ExecutedToolCall {
 ```ts
 type Role = 'system' | 'user' | 'assistant' | 'tool'
 ```
+
+---
+
+### `ImageMediaType`
+
+MIME types supported for image content in tool results.
+
+```ts
+type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+```
+
+---
+
+### `ImageResult`
+
+A structured image result returned by a tool's execute function. When the agent loop detects this in a tool result, it attaches it to the message so providers can format it as a multimodal content block.
+
+```ts
+interface ImageResult {
+    type: 'image'
+    mediaType: ImageMediaType
+    data: string
+    text?: string
+}
+```
+
+| Field       | Type             | Description                                   |
+| ----------- | ---------------- | --------------------------------------------- |
+| `type`      | `'image'`        | Discriminator — must be `'image'`.            |
+| `mediaType` | `ImageMediaType` | The MIME type of the image.                   |
+| `data`      | `string`         | Base64-encoded image data.                    |
+| `text`      | `string?`        | Optional text to include alongside the image. |
 
 ---
 
