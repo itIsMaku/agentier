@@ -44,23 +44,10 @@ export interface OpenAITool {
  * @returns Array of OpenAI-formatted messages ready for the API.
  */
 export function toOpenAIMessages(messages: Message[]): OpenAIMessage[] {
-    return messages.map((msg) => {
+    return messages.flatMap((msg) => {
         const oaiMsg: OpenAIMessage = {
             role: msg.role,
             content: msg.content,
-        }
-
-        /** Tool result with image → multimodal content array. */
-        if (msg.role === 'tool' && msg.image) {
-            const parts: OpenAIContentPart[] = []
-            if (msg.content) {
-                parts.push({ type: 'text', text: msg.content })
-            }
-            parts.push({
-                type: 'image_url',
-                image_url: { url: `data:${msg.image.mediaType};base64,${msg.image.data}` },
-            })
-            oaiMsg.content = parts
         }
 
         if (msg.toolCalls && msg.toolCalls.length > 0) {
@@ -82,7 +69,27 @@ export function toOpenAIMessages(messages: Message[]): OpenAIMessage[] {
             oaiMsg.name = msg.name
         }
 
-        return oaiMsg
+        /**
+         * OpenAI rejects image_url in tool messages. When a tool result contains
+         * an image, send the tool message with text-only content and append a
+         * separate user message with the image_url content block.
+         */
+        if (msg.role === 'tool' && msg.image) {
+            const userImageMsg: OpenAIMessage = {
+                role: 'user',
+                content: [
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${msg.image.mediaType};base64,${msg.image.data}`,
+                        },
+                    },
+                ],
+            }
+            return [oaiMsg, userImageMsg]
+        }
+
+        return [oaiMsg]
     })
 }
 

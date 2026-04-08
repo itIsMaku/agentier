@@ -52,7 +52,7 @@ describe('toOpenAIMessages', () => {
         })
     })
 
-    it('should convert tool result with image to multimodal content', () => {
+    it('should split tool result with image into tool message + user image message', () => {
         const messages: Message[] = [
             {
                 role: 'tool',
@@ -68,14 +68,28 @@ describe('toOpenAIMessages', () => {
         ]
 
         const result = toOpenAIMessages(messages)
-        expect(result[0].content).toEqual([
-            { type: 'text', text: 'Screenshot captured' },
-            { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,abc123base64' } },
-        ])
-        expect(result[0].tool_call_id).toBe('call_1')
+        expect(result).toHaveLength(2)
+
+        // First: tool message with text-only content
+        expect(result[0]).toEqual({
+            role: 'tool',
+            content: 'Screenshot captured',
+            tool_call_id: 'call_1',
+        })
+
+        // Second: user message with image
+        expect(result[1]).toEqual({
+            role: 'user',
+            content: [
+                {
+                    type: 'image_url',
+                    image_url: { url: 'data:image/jpeg;base64,abc123base64' },
+                },
+            ],
+        })
     })
 
-    it('should convert tool result with image but no text content', () => {
+    it('should split tool result with image but null content', () => {
         const messages: Message[] = [
             {
                 role: 'tool',
@@ -90,9 +104,13 @@ describe('toOpenAIMessages', () => {
         ]
 
         const result = toOpenAIMessages(messages)
-        expect(result[0].content).toEqual([
-            { type: 'image_url', image_url: { url: 'data:image/png;base64,pngdata' } },
-        ])
+        expect(result).toHaveLength(2)
+        expect(result[0].role).toBe('tool')
+        expect(result[0].content).toBeNull()
+        expect(result[1]).toEqual({
+            role: 'user',
+            content: [{ type: 'image_url', image_url: { url: 'data:image/png;base64,pngdata' } }],
+        })
     })
 })
 
