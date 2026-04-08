@@ -47,6 +47,37 @@ describe('toGeminiContents', () => {
             parts: [{ functionResponse: { name: 'search', response: { content: 'result' } } }],
         })
     })
+
+    it('should convert tool result with image to functionResponse + inlineData', () => {
+        const messages: Message[] = [
+            {
+                role: 'tool',
+                content: 'Screenshot captured',
+                name: 'screenshot',
+                toolCallId: 'c1',
+                image: {
+                    type: 'image',
+                    mediaType: 'image/jpeg',
+                    data: 'abc123base64',
+                    text: 'Screenshot captured',
+                },
+            },
+        ]
+
+        const result = toGeminiContents(messages)
+        expect(result.contents[0]).toEqual({
+            role: 'user',
+            parts: [
+                {
+                    functionResponse: {
+                        name: 'screenshot',
+                        response: { content: 'Screenshot captured' },
+                    },
+                },
+                { inlineData: { mimeType: 'image/jpeg', data: 'abc123base64' } },
+            ],
+        })
+    })
 })
 
 describe('toGeminiTools', () => {

@@ -20,6 +20,8 @@ export type {
     Role,
     ToolCall,
     Message,
+    ImageMediaType,
+    ImageResult,
     ToolContext,
     JsonSchema,
     ToolJsonSchema,

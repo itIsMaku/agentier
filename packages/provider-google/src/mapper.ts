@@ -9,13 +9,14 @@ export interface GeminiContent {
 /**
  * A single part within a Gemini message.
  *
- * Can be plain text, a function call from the model, or a function response
- * from the caller.
+ * Can be plain text, a function call from the model, a function response
+ * from the caller, or inline binary data (e.g. images).
  */
 export type GeminiPart =
     | { text: string }
     | { functionCall: { name: string; args: Record<string, unknown> } }
     | { functionResponse: { name: string; response: { content: string } } }
+    | { inlineData: { mimeType: string; data: string } }
 
 /** Wire format for a Gemini function (tool) declaration. */
 export interface GeminiFunctionDeclaration {
@@ -72,18 +73,29 @@ export function toGeminiContents(messages: Message[]): {
 
         if (msg.role === 'tool') {
             /** Gemini expects function responses inside user turns. */
-            const part: GeminiPart = {
-                functionResponse: {
-                    name: msg.name ?? '',
-                    response: { content: msg.content ?? '' },
+            const parts: GeminiPart[] = [
+                {
+                    functionResponse: {
+                        name: msg.name ?? '',
+                        response: { content: msg.content ?? '' },
+                    },
                 },
+            ]
+
+            if (msg.image) {
+                parts.push({
+                    inlineData: {
+                        mimeType: msg.image.mediaType,
+                        data: msg.image.data,
+                    },
+                })
             }
 
             const last = contents[contents.length - 1]
             if (last && last.role === 'user' && last.parts.some((p) => 'functionResponse' in p)) {
-                last.parts.push(part)
+                for (const p of parts) last.parts.push(p)
             } else {
-                contents.push({ role: 'user', parts: [part] })
+                contents.push({ role: 'user', parts })
             }
         }
     }

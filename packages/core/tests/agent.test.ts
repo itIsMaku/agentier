@@ -249,4 +249,56 @@ describe('createAgent', () => {
         expect(config.systemPrompt).toBe('Hello')
         expect(config.maxIterations).toBe(5)
     })
+
+    it('should handle image results from tools', async () => {
+        const provider = createMockProvider([
+            {
+                content: null,
+                toolCalls: [{ id: 'call_1', name: 'screenshot', arguments: {} }],
+                usage: { inputTokens: 10, outputTokens: 5 },
+            },
+            {
+                content: 'I can see a login form on the screen.',
+                toolCalls: [],
+                usage: { inputTokens: 30, outputTokens: 20 },
+            },
+        ])
+
+        const screenshotTool = defineTool({
+            name: 'screenshot',
+            description: 'Capture a screenshot',
+            parameters: z.object({}),
+            execute: async () => ({
+                type: 'image' as const,
+                mediaType: 'image/jpeg' as const,
+                data: 'base64encodeddata',
+                text: 'Screenshot captured',
+            }),
+        })
+
+        const agent = createAgent({
+            provider,
+            model: 'test',
+            tools: [screenshotTool],
+        })
+
+        const result = await agent.run('Take a screenshot')
+
+        expect(result.output).toBe('I can see a login form on the screen.')
+        expect(result.toolCalls).toHaveLength(1)
+        expect(result.toolCalls[0].result).toEqual({
+            type: 'image',
+            mediaType: 'image/jpeg',
+            data: 'base64encodeddata',
+            text: 'Screenshot captured',
+        })
+
+        // Verify the tool message has the image attached
+        const toolMsg = result.messages.find((m) => m.role === 'tool')
+        expect(toolMsg?.image).toBeDefined()
+        expect(toolMsg?.image?.type).toBe('image')
+        expect(toolMsg?.image?.mediaType).toBe('image/jpeg')
+        expect(toolMsg?.image?.data).toBe('base64encodeddata')
+        expect(toolMsg?.content).toBe('Screenshot captured')
+    })
 })

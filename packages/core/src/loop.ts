@@ -9,6 +9,7 @@ import type {
     ModelResponse,
     AgentAction,
     ToolJsonSchema,
+    ImageResult,
 } from './types'
 import { AgentError } from './errors'
 import { toolToJsonSchema, validateToolArgs } from './tool'
@@ -16,15 +17,31 @@ import { createAction, runMiddlewareChain } from './middleware'
 
 /**
  * @internal
+ * Type guard that checks whether a tool result is an {@link ImageResult}.
+ */
+function isImageResult(value: unknown): value is ImageResult {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        (value as Record<string, unknown>).type === 'image' &&
+        typeof (value as Record<string, unknown>).data === 'string' &&
+        typeof (value as Record<string, unknown>).mediaType === 'string'
+    )
+}
+
+/**
+ * @internal
  * Serializes a tool's return value into a string suitable for inclusion in a
  * conversation message. Returns a default success message for `null`/`undefined`,
  * passes strings through directly, and JSON-stringifies everything else.
+ * Image results are serialized using their text field or a default message.
  *
  * @param value - The raw return value from a tool execution.
  * @returns A string representation of the result.
  */
 function serializeToolResult(value: unknown): string {
     if (value === undefined || value === null) return 'Tool executed successfully'
+    if (isImageResult(value)) return value.text ?? 'Image result'
     if (typeof value === 'string') return value
     return JSON.stringify(value)
 }
@@ -288,7 +305,15 @@ export async function runAgentLoop<T = string>(
                         duration,
                     })
 
-                    messages.push({ role: 'tool', content: serialized, toolCallId: tc.id })
+                    const toolMsg: Message = {
+                        role: 'tool',
+                        content: serialized,
+                        toolCallId: tc.id,
+                    }
+                    if (isImageResult(result)) {
+                        toolMsg.image = result
+                    }
+                    messages.push(toolMsg)
                 } catch (err) {
                     const error = err instanceof Error ? err : new Error(String(err))
                     const duration = Date.now() - toolStart

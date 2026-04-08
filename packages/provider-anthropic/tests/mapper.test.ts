@@ -39,6 +39,68 @@ describe('toAnthropicMessages', () => {
             content: [{ type: 'tool_result', tool_use_id: 'tu_1', content: 'result data' }],
         })
     })
+
+    it('should convert tool result with image to multimodal tool_result content', () => {
+        const messages: Message[] = [
+            {
+                role: 'tool',
+                content: 'Screenshot captured',
+                toolCallId: 'tu_1',
+                image: {
+                    type: 'image',
+                    mediaType: 'image/jpeg',
+                    data: 'abc123base64',
+                    text: 'Screenshot captured',
+                },
+            },
+        ]
+
+        const result = toAnthropicMessages(messages)
+        expect(result.messages[0]).toEqual({
+            role: 'user',
+            content: [
+                {
+                    type: 'tool_result',
+                    tool_use_id: 'tu_1',
+                    content: [
+                        { type: 'text', text: 'Screenshot captured' },
+                        {
+                            type: 'image',
+                            source: {
+                                type: 'base64',
+                                media_type: 'image/jpeg',
+                                data: 'abc123base64',
+                            },
+                        },
+                    ],
+                },
+            ],
+        })
+    })
+
+    it('should convert tool result with image but no text', () => {
+        const messages: Message[] = [
+            {
+                role: 'tool',
+                content: null,
+                toolCallId: 'tu_2',
+                image: {
+                    type: 'image',
+                    mediaType: 'image/png',
+                    data: 'pngdata',
+                },
+            },
+        ]
+
+        const result = toAnthropicMessages(messages)
+        const toolResult = (result.messages[0].content as any[])[0]
+        expect(toolResult.content).toEqual([
+            {
+                type: 'image',
+                source: { type: 'base64', media_type: 'image/png', data: 'pngdata' },
+            },
+        ])
+    })
 })
 
 describe('toAnthropicTools', () => {
