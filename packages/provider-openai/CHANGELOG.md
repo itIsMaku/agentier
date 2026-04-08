@@ -1,5 +1,14 @@
 # @agentier/openai
 
+## 1.0.1
+
+### Patch Changes
+
+- [#4](https://github.com/itIsMaku/agentier/pull/4) [`cf035c5`](https://github.com/itIsMaku/agentier/commit/cf035c5585933972041a62321312d54d67af7384) Thanks [@itIsMaku](https://github.com/itIsMaku)! - Fix OpenAI provider rejecting image_url in tool messages by splitting into a text-only tool message followed by a user message with the image content.
+
+- Updated dependencies []:
+    - @agentier/core@1.0.1
+
 ## 1.0.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @agentier/google
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies []:
+    - @agentier/core@1.0.1
+
 ## 1.0.0
 
 ### Minor Changes
