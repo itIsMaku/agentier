@@ -1,9 +1,14 @@
 import type { Message, ToolCall, ToolJsonSchema } from '@agentier/core'
 
+/** A content part in an OpenAI message (text or image). */
+export type OpenAIContentPart =
+    | { type: 'text'; text: string }
+    | { type: 'image_url'; image_url: { url: string } }
+
 /** Wire format for an OpenAI chat message. */
 export interface OpenAIMessage {
     role: 'system' | 'user' | 'assistant' | 'tool'
-    content: string | null
+    content: string | OpenAIContentPart[] | null
     tool_calls?: OpenAIToolCall[]
     tool_call_id?: string
     name?: string
@@ -43,6 +48,19 @@ export function toOpenAIMessages(messages: Message[]): OpenAIMessage[] {
         const oaiMsg: OpenAIMessage = {
             role: msg.role,
             content: msg.content,
+        }
+
+        /** Tool result with image → multimodal content array. */
+        if (msg.role === 'tool' && msg.image) {
+            const parts: OpenAIContentPart[] = []
+            if (msg.content) {
+                parts.push({ type: 'text', text: msg.content })
+            }
+            parts.push({
+                type: 'image_url',
+                image_url: { url: `data:${msg.image.mediaType};base64,${msg.image.data}` },
+            })
+            oaiMsg.content = parts
         }
 
         if (msg.toolCalls && msg.toolCalls.length > 0) {

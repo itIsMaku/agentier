@@ -17,11 +17,24 @@ export interface AnthropicToolUseBlock {
     input: Record<string, unknown>
 }
 
+/** An image content block within a tool result. */
+export interface AnthropicImageBlock {
+    type: 'image'
+    source: {
+        type: 'base64'
+        media_type: string
+        data: string
+    }
+}
+
+/** Content inside a tool result — can be text or image blocks. */
+export type AnthropicToolResultContent = AnthropicTextBlock | AnthropicImageBlock
+
 /** A tool-result content block carrying the output of a previously invoked tool. */
 export interface AnthropicToolResultBlock {
     type: 'tool_result'
     tool_use_id: string
-    content: string
+    content: string | AnthropicToolResultContent[]
 }
 
 /** Union of all content block types used in Anthropic messages. */
@@ -101,10 +114,30 @@ export function toAnthropicMessages(messages: Message[]): {
         if (msg.role === 'tool') {
             /** Anthropic expects tool results inside user messages. */
             const lastMsg = result[result.length - 1]
+
+            let toolContent: string | AnthropicToolResultContent[]
+            if (msg.image) {
+                const parts: AnthropicToolResultContent[] = []
+                if (msg.content) {
+                    parts.push({ type: 'text', text: msg.content })
+                }
+                parts.push({
+                    type: 'image',
+                    source: {
+                        type: 'base64',
+                        media_type: msg.image.mediaType,
+                        data: msg.image.data,
+                    },
+                })
+                toolContent = parts
+            } else {
+                toolContent = msg.content ?? ''
+            }
+
             const toolResultBlock: AnthropicToolResultBlock = {
                 type: 'tool_result',
                 tool_use_id: msg.toolCallId ?? '',
-                content: msg.content ?? '',
+                content: toolContent,
             }
 
             if (lastMsg && lastMsg.role === 'user' && Array.isArray(lastMsg.content)) {

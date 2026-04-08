@@ -9,6 +9,43 @@
 export type Role = 'system' | 'user' | 'assistant' | 'tool'
 
 /**
+ * MIME types supported for image content in tool results.
+ */
+export type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+
+/**
+ * A structured image result returned by a tool's execute function.
+ * When detected in a tool result, the agent loop will format it as a
+ * multimodal content block appropriate for the provider (e.g. `image_url`
+ * for OpenAI, `image` source for Anthropic, `inlineData` for Gemini).
+ *
+ * @example
+ * ```ts
+ * const screenshotTool = defineTool({
+ *   name: 'screenshot',
+ *   description: 'Capture a screenshot',
+ *   parameters: z.object({}),
+ *   execute: async () => ({
+ *     type: 'image',
+ *     mediaType: 'image/jpeg',
+ *     data: captureScreenAsBase64(),
+ *     text: 'Screenshot captured',
+ *   }),
+ * })
+ * ```
+ */
+export interface ImageResult {
+    /** Discriminator — must be `'image'`. */
+    type: 'image'
+    /** The MIME type of the image. */
+    mediaType: ImageMediaType
+    /** Base64-encoded image data. */
+    data: string
+    /** Optional text to include alongside the image. */
+    text?: string
+}
+
+/**
  * Represents a tool invocation requested by the model.
  *
  * @example
@@ -53,4 +90,10 @@ export interface Message {
     toolCallId?: string
     /** An optional display name for the message author. */
     name?: string
+    /**
+     * Image data attached to a tool result message.
+     * When present, providers format this as a multimodal content block
+     * alongside the text content.
+     */
+    image?: ImageResult
 }

@@ -51,6 +51,49 @@ describe('toOpenAIMessages', () => {
             tool_call_id: 'call_1',
         })
     })
+
+    it('should convert tool result with image to multimodal content', () => {
+        const messages: Message[] = [
+            {
+                role: 'tool',
+                content: 'Screenshot captured',
+                toolCallId: 'call_1',
+                image: {
+                    type: 'image',
+                    mediaType: 'image/jpeg',
+                    data: 'abc123base64',
+                    text: 'Screenshot captured',
+                },
+            },
+        ]
+
+        const result = toOpenAIMessages(messages)
+        expect(result[0].content).toEqual([
+            { type: 'text', text: 'Screenshot captured' },
+            { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,abc123base64' } },
+        ])
+        expect(result[0].tool_call_id).toBe('call_1')
+    })
+
+    it('should convert tool result with image but no text content', () => {
+        const messages: Message[] = [
+            {
+                role: 'tool',
+                content: null,
+                toolCallId: 'call_2',
+                image: {
+                    type: 'image',
+                    mediaType: 'image/png',
+                    data: 'pngdata',
+                },
+            },
+        ]
+
+        const result = toOpenAIMessages(messages)
+        expect(result[0].content).toEqual([
+            { type: 'image_url', image_url: { url: 'data:image/png;base64,pngdata' } },
+        ])
+    })
 })
 
 describe('toOpenAITools', () => {

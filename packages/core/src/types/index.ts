@@ -4,7 +4,7 @@
  * @module types
  */
 
-export type { Role, ToolCall, Message } from './message'
+export type { Role, ToolCall, Message, ImageMediaType, ImageResult } from './message'
 export type { ToolContext, JsonSchema, ToolJsonSchema, Tool } from './tool'
 export type { ChatParams, ModelResponse, StreamEvent, ModelProvider } from './provider'
 export type { AgentActionType, ActionPayloadMap, AgentAction, Middleware } from './middleware'

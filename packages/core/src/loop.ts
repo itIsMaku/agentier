@@ -9,6 +9,7 @@ import type {
     ModelResponse,
     AgentAction,
     ToolJsonSchema,
+    ImageResult,
 } from './types'
 import { AgentError } from './errors'
 import { toolToJsonSchema, validateToolArgs } from './tool'
@@ -16,15 +17,31 @@ import { createAction, runMiddlewareChain } from './middleware'
 
 /**
  * @internal
+ * Type guard that checks whether a tool result is an {@link ImageResult}.
+ */
+function isImageResult(value: unknown): value is ImageResult {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        (value as Record<string, unknown>).type === 'image' &&
+        typeof (value as Record<string, unknown>).data === 'string' &&
+        typeof (value as Record<string, unknown>).mediaType === 'string'
+    )
+}
+
+/**
+ * @internal
  * Serializes a tool's return value into a string suitable for inclusion in a
  * conversation message. Returns a default success message for `null`/`undefined`,
  * passes strings through directly, and JSON-stringifies everything else.
+ * Image results are serialized using their text field or a default message.
  *
  * @param value - The raw return value from a tool execution.
  * @returns A string representation of the result.
  */
 function serializeToolResult(value: unknown): string {
     if (value === undefined || value === null) return 'Tool executed successfully'
+    if (isImageResult(value)) return value.text ?? 'Image result'
     if (typeof value === 'string') return value
     return JSON.stringify(value)
 }
@@ -58,6 +75,7 @@ export async function runAgentLoop<T = string>(
 ): Promise<AgentResult<T>> {
     const startTime = Date.now()
 
+    const model = options.model ?? config.model
     const maxIterations = options.maxIterations ?? config.maxIterations ?? 10
     const maxTokens = options.maxTokens ?? config.maxTokens ?? Infinity
     const timeout = options.timeout ?? config.timeout ?? 60_000
@@ -140,7 +158,7 @@ export async function runAgentLoop<T = string>(
             const modelCallAction = createAction('model_call', {
                 messages: [...messages],
                 tools: toolSchemas,
-                model: config.model,
+                model,
             })
 
             try {
@@ -153,6 +171,7 @@ export async function runAgentLoop<T = string>(
                         if (useStream) {
                             resp = await streamModelCall(
                                 config,
+                                model,
                                 messages,
                                 toolSchemas,
                                 options,
@@ -160,7 +179,7 @@ export async function runAgentLoop<T = string>(
                             )
                         } else {
                             resp = await config.provider.chat({
-                                model: config.model,
+                                model,
                                 messages,
                                 tools: toolSchemas.length > 0 ? toolSchemas : undefined,
                                 temperature: options.temperature ?? config.temperature,
@@ -288,7 +307,15 @@ export async function runAgentLoop<T = string>(
                         duration,
                     })
 
-                    messages.push({ role: 'tool', content: serialized, toolCallId: tc.id })
+                    const toolMsg: Message = {
+                        role: 'tool',
+                        content: serialized,
+                        toolCallId: tc.id,
+                    }
+                    if (isImageResult(result)) {
+                        toolMsg.image = result
+                    }
+                    messages.push(toolMsg)
                 } catch (err) {
                     const error = err instanceof Error ? err : new Error(String(err))
                     const duration = Date.now() - toolStart
@@ -339,7 +366,7 @@ export async function runAgentLoop<T = string>(
     const result = buildResult()
 
     if (options.outputSchema) {
-        return await parseStructuredOutput(result, options, config, messages, middlewares)
+        return await parseStructuredOutput(result, options, config, model, messages, middlewares)
     }
 
     /** Persist conversation to memory if configured. */
@@ -408,13 +435,14 @@ export async function runAgentLoop<T = string>(
  */
 async function streamModelCall<T>(
     config: AgentConfig,
+    model: string,
     messages: Message[],
     toolSchemas: ToolJsonSchema[],
     options: RunOptions<T>,
     signal: AbortSignal,
 ): Promise<ModelResponse> {
     const stream = config.provider.stream({
-        model: config.model,
+        model,
         messages,
         tools: toolSchemas.length > 0 ? toolSchemas : undefined,
         temperature: options.temperature ?? config.temperature,
@@ -464,6 +492,7 @@ async function parseStructuredOutput<T>(
     result: AgentResult<T>,
     options: RunOptions<T>,
     config: AgentConfig,
+    model: string,
     messages: Message[],
     middlewares: AgentConfig['middleware'],
 ): Promise<AgentResult<T>> {
@@ -498,7 +527,7 @@ async function parseStructuredOutput<T>(
                 })
 
                 const response = await config.provider.chat({
-                    model: config.model,
+                    model,
                     messages,
                     temperature: 0,
                     maxOutputTokens: options.maxOutputTokens ?? config.maxOutputTokens,
