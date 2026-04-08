@@ -1,6 +1,6 @@
 {
     "name": "@agentier/openai",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -28,7 +28,7 @@
         "typecheck": "tsc --noEmit"
     },
     "peerDependencies": {
-        "@agentier/core": "^1.0.0"
+        "@agentier/core": "^1.0.1"
     },
     "devDependencies": {
         "@agentier/core": "workspace:*",
