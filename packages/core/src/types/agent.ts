@@ -105,6 +105,8 @@ export interface AgentResult<T = string> {
  *   the agent will parse and validate the model's response into this type.
  */
 export interface RunOptions<T = string> {
+    /** Model identifier override for this run. Overrides {@link AgentConfig.model}. */
+    model?: string
     /** Initial messages to prepend to the conversation (overrides memory loading). */
     messages?: Message[]
     /**

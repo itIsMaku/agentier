@@ -250,6 +250,26 @@ describe('createAgent', () => {
         expect(config.maxIterations).toBe(5)
     })
 
+    it('should allow overriding model per run', async () => {
+        let usedModel: string | undefined
+        const provider: ModelProvider = {
+            name: 'mock',
+            async chat(params: ChatParams): Promise<ModelResponse> {
+                usedModel = params.model
+                return { content: 'ok', toolCalls: [], usage: { inputTokens: 1, outputTokens: 1 } }
+            },
+            async *stream(): AsyncIterable<StreamEvent> {},
+        }
+
+        const agent = createAgent({ provider, model: 'default-model' })
+
+        await agent.run('Hi', { model: 'override-model' })
+        expect(usedModel).toBe('override-model')
+
+        await agent.run('Hi')
+        expect(usedModel).toBe('default-model')
+    })
+
     it('should handle image results from tools', async () => {
         const provider = createMockProvider([
             {
